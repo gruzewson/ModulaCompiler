@@ -49,9 +49,9 @@ GRAMMAR:
 /* PROGRAM_MODULE */
 /* Consists of a keyword MODULE, followed by an identifier (IDENT),
    semicolon, import declarations (IMPORTS), block (BLOCK),
-   identifier and a dot (fullstop, period) */ //TODO: add block
+   identifier and a dot (fullstop, period) */
 PROGRAM_MODULE: 
-      KW_MODULE IDENT ';' IMPORTS IDENT '.' 
+      KW_MODULE IDENT ';' IMPORTS BLOCK IDENT '.' 
       {
           // You can add code here to handle successful parsing of a program module
           printf("Program module parsed successfully!\n");
@@ -77,16 +77,9 @@ IMPORT:
 
 /* IDENT_LIST */
 /* List of identifiers separated with commas */
-IDENT_LIST:
-      IDENT
-      {
-          strncpy($$, $1, MAX_STR_LEN);
-      }
-    | IDENT_LIST ',' IDENT
-      {
-          snprintf($$, MAX_STR_LEN, "%s, %s", $1, $3);  /* Concatenate identifiers */
-      }
-      ;
+IDENT_LIST: IDENT
+          | IDENT ',' IDENT_LIST
+;
 
 /* BLOCK */
 /* Can either be a sequence:
@@ -94,91 +87,195 @@ IDENT_LIST:
    and keyword END,
    or a sequence:
    declarations, and keyword END*/
+BLOCK:
+      DECLARATIONS KW_BEGIN STATEMENTS KW_END
+    | DECLARATIONS KW_END
+    ;
 
 
 /* DECLARATIONS */
 /* Possibly empty sequence of declarations (DECLARATION) */
+DECLARATIONS:
+      /* empty */
+    | DECLARATIONS DECLARATION
+    ;
 
 /* DECLARATION */
 /* Declaration is either keyword CONST, followed by declarations of constants
-  (CONST_DECLS),
-  or a keyword VAR, followed by declaration of variables (VAR_DECLS),
-  or a procedure declaration (PROC_DECL) with a semicolon */
+   (CONST_DECLS),
+   or a keyword VAR, followed by declaration of variables (VAR_DECLS),
+   or a procedure declaration (PROC_DECL) with a semicolon */
+DECLARATION:
+         KW_CONST CONST_DECLS
+      | KW_VAR VAR_DECLS
+      | PROC_DECL ';'
+      ;
 
 /* CONST_DECLS */
 /* Possibly empty sequence of declarations of constants (CONST_DECL), each
    followed by a semicolon */
+CONST_DECLS:
+      /* empty */
+   | CONST_DECLS CONST_DECL ';'
+   ;
 
 /* CONST_DECL */
 /* Identifier, fololowed by equal sign and a constant factor (CONST_FACTOR) */
+CONST_DECL:
+      IDENT ASSIGN CONST_FACTOR
+      {
+         found("CONST_DECL", $1);
+      }
+      ;
 
 /* CONST_FACTOR */
 /* Either identifier, integer constant, real constant or string */
+CONST_FACTOR:
+      IDENT
+    | INTEGER_CONST
+    | REAL_CONST
+    | STRING_CONST
+    ;
 
 /* VAR_DECLS */
 /* Possibly empty sequence of declarations of variables (VAR_DECL), each
    followed by a semicolon */
+VAR_DECLS:
+      /*empty*/
+      | VAR_DECLS VAR_DECL ';'
+      ;
 
 /* VAR_DECL */
 /* List of identifiers (IDENT_LIST), followed by a colon, and type specification
    (TYPE_SPEC) */
+VAR_DECL:
+      IDENT_LIST ':' TYPE_SPEC
+      {
+         found("VAR_DECL", $1);
+      }
+      ;
 
 /* TYPE_SPEC */
-/* One of tyhe following:
+/* One of the following:
    - identifier,
    - keyword ARRAY, specification of diomensions (DIMEN_SPECS), keyword OF,
      and type specification (TYPE_SPEC)
    - keyword RECORD, fields (FIELDS), keyword END
 */
+TYPE_SPEC:
+      IDENT
+    | KW_ARRAY DIMEN_SPECS KW_OF TYPE_SPEC
+    | KW_RECORD FIELDS KW_END
+    ;
 
 /* DIMEN_SPECS */
  /* nonempty list of dimension specifications (DIMEN_SPEC)
     separated with commas */
+DIMEN_SPECS:
+      DIMEN_SPEC
+      | DIMEN_SPECS ',' DIMEN_SPEC
+      ;
 
 /* DIMEN_SPEC */
 /* left square bracket, constant factor (CONST_FACTOR), range operator,
    constant factor, right square  bracket */
+   DIMEN_SPEC:
+      '[' CONST_FACTOR RANGE CONST_FACTOR ']'
+      ;
 
 /* FIELDS */
 /* Possibly empty sequence of fields (FIELD), followed each by a semicolon */
+FIELDS:
+      /*empty*/
+      | FIELDS FIELD ';'
+      ;
 
 /* FIELD */
 /* Identifier list (IDENT_LIST), followed by a colon, and type specification
    (TYPE_SPEC) */
+FIELD:
+      IDENT_LIST ':' TYPE_SPEC
+      ;
 
 /* PROC_DECL */
 /* Procedure header, semicolon, block, and identifier */
+PROC_DECL:
+      PROC_HEAD ';' BLOCK IDENT
+      {
+         found("PROC_DECL", $4);
+      }
+      ;
 
 /* PROC_HEAD */
 /* keyword PROCEDURE (KW_PROCEDURE), identifier (IDENT),
    optional formal parameters (OPT_FORMAL_PARAMS) */
+PROC_HEAD:
+      KW_PROCEDURE IDENT OPT_FORMAL_PARAMS
+      {
+         found("PROC_HEAD", $2);
+      }
+      ;
 
 /* OPT_FORMAL_PARAMS */
 /* empty or formal parameters (FORMAL_PARAMS) */
+OPT_FORMAL_PARAMS:
+      /*empty*/
+      | FORMAL_PARAMS
+      ;
 
 /* FORMAL_PARAMS */
 /* left parenthesis, formal parameter sections (FP_SECTIONS),
    right parenthesis, optional return type (OPT_RET_TYPE) */
+FORMAL_PARAMS:
+      '(' FP_SECTIONS ')' OPT_RET_TYPE
+      ;
 
 /* FP_SECTIONS */
 /* nonempty list of formal parameter sections (FP_SECTION) separated with
    semicolons */
+FP_SECTIONS:
+      FP_SECTIONS FP_SECTION ';'
+      | FP_SECTION
+      ;
 
 /* FP_SECTION */
 /* optional keyword VAR (OPT_VAR), identifier list (IDENT_LIST),
    colon, and qualified indentifier (QUALIDENT) */
+FP_SECTION:
+      OPT_VAR IDENT_LIST ':' QUALIDENT
+      {
+         found("FP_SECTION", $2);
+      }
+      ;
 
 /* OPT_VAR */
 /* empty or keyword VAR (KW_VAR) */
+OPT_VAR:
+      /* empty */
+      | KW_VAR
+      ;
 
 /* OPT_RET_TYPE */
 /* empty or colon and qualified identifier (QUALIDENT) */
+OPT_RET_TYPE:
+      /* empty */
+      | ':' QUALIDENT
+      ;
 
 /* QUALIDENT */
 /* nonempty identifier list separated with dots */
+QUALIDENT:
+      IDENT
+    | IDENT '.' QUALIDENT
+    ;
 
 /* STATEMENTS */
 /* List of statements (STATEMENT) separated with semicolons */
+STATEMENTS:
+      /* empty */
+    | STATEMENTS ';' STATEMENT
+    ;
+
 
 /* STATEMENT */
 /* Either a procedure call (PROCEDURE_CALL),
@@ -190,34 +287,86 @@ IDENT_LIST:
  or infinite loop (LOOP_STATEMENT),
  or case statement (CASE_STATEMENT)
 */
+STATEMENT:
+      PROCEDURE_CALL
+      | ASSIGNMENT
+      | FOR_STATEMENT
+      | IF_STATEMENT
+      | WHILE_STATEMENT
+      | REPEAT_STATEMENT
+      | LOOP_STATEMENT
+      |CASE_STATEMENT
+      ;
 
 /* ASSIGNMENT */
 /* Identifier, qualifier, assignment operator (ASSIGN), and expression (EXPR) */
+ASSIGNMENT:
+      IDENT ASSIGN QUALIF EXPR
+      {
+         found("ASSIGNMENT", $1);
+      }
+      ;
 
 /* QUALIF */
 /* can either be empty,
    or a left square bracket, indexes (SUBSCRIPTS), right square  bracket,
       and qualifier,
    or a dot, identifier, and qualifier */
+QUALIF:
+      /* empty */
+      | '[' SUBSCRIPTS ']' QUALIF
+      | '.' IDENT QUALIF
+      ;
 
 /* SUBSCRIPTS */
  /* nonepmty expression list separated with commas */
+SUBSCRIPTS:
+      EXPR
+      | SUBSCRIPTS ',' EXPR
+      ;
 
 /* PROCEDURE_CALL */
 /* Either only identifier,
  or identifier, left parenthesis, actual parameters (ACT_PARAMETERS),
  and right parenthesis */
+PROCEDURE_CALL:
+      IDENT
+      {
+         found("PROCEDURE_CALL", $1);
+      }
+      | IDENT '(' ACT_PARAMETERS ')'
+      {
+          found("PROCEDURE_CALL", $1);
+      }
+      ;
 
 /* ACT_PARAMETERS */
 /* List of expressions (EXPR) separated with commas */
+ACT_PARAMETERS:
+      EXPR ','
+      ;
 
 /* EXPR */
 /* Either a simple expression (SIMPLE_EXPR),
    or two simple expressions separated with a relational operator (REL_OP) */
+EXPR:
+      SIMPLE_EXPR
+      | SIMPLE_EXPR REL_OP SIMPLE_EXPR
+      ;
 
 /* REL_OP */
 /* Either equal sign, less, greater, hash, not equal (NEQ),
    less or equal (LE), greater or equal (GE), or keyword IN */
+REL_OP:
+      '='
+    | '<'
+    | '>'
+    | '#'
+    | NEQ
+    | LE
+    | GE
+    | KW_IN
+    ;
 
 /* SIMPLE_EXPR */
 /* Either a factor (FACTOR),
@@ -230,6 +379,17 @@ IDENT_LIST:
    - conjunction (KW_AND),
    - interger division (KW_DIV),
    - or modulo (KW_MOD) */
+SIMPLE_EXPR:
+      FACTOR
+    | SIMPLE_EXPR '+' SIMPLE_EXPR
+    | SIMPLE_EXPR '-' SIMPLE_EXPR
+    | SIMPLE_EXPR '*' SIMPLE_EXPR
+    | SIMPLE_EXPR '/' SIMPLE_EXPR
+    | SIMPLE_EXPR KW_OR SIMPLE_EXPR
+    | SIMPLE_EXPR KW_AND SIMPLE_EXPR
+    | SIMPLE_EXPR KW_DIV SIMPLE_EXPR
+    | SIMPLE_EXPR KW_MOD SIMPLE_EXPR
+    ;
 
 /* FACTOR */
 /* Either interger constant, real constant, string constant,
@@ -238,11 +398,23 @@ IDENT_LIST:
    procedure call, expression in parentheses,
    or a factor following either keyword NOT, or a unary minus
    (with NEG precedence) */
+FACTOR:
+      INTEGER_CONST
+   | REAL_CONST
+   | STRING_CONST
+   | CHAR_CONST
+   | IDENT QUALIF
+   | PROCEDURE_CALL
+   | '(' EXPR ')'
+   | NEG FACTOR
+   | KW_NOT FACTOR
+   ;
 
 /* FOR_STATEMENT */
  /* Sequence: keyword FOR, identifier, assignment operator (ASSIGN),
     expression, TO or DOWNTO (TO_DOWNTO), expression, keyword DO,
    statements (STATEMENTS), and keyword END */
+
 
 /* TO_DOWNTO */
  /* Either keyword TO, or keyword DOWNTO */
@@ -288,7 +460,7 @@ IDENT_LIST:
 
 int main( void )
 { 
-	printf( "Marcel Grużewski\n" );
+	printf( "First and last name\n" );
 	printf( "yytext              Token type      Token value as string\n\n" );
 	yyparse();
 	return( 0 ); // OK
