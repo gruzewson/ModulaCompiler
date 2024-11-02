@@ -52,10 +52,7 @@ GRAMMAR:
    identifier and a dot (fullstop, period) */
 PROGRAM_MODULE: 
       KW_MODULE IDENT ';' IMPORTS BLOCK IDENT '.' 
-      {
-          // You can add code here to handle successful parsing of a program module
-          printf("Program module parsed successfully!\n");
-      }
+      { found("PROGRAM_MODULE", $2); }
       ;
 
 
@@ -70,9 +67,7 @@ IMPORTS:
 /* Keyword FROM, followed by identifier, keyword IMPORT, list of identifiers, and a semicolon */
 IMPORT:
       KW_FROM IDENT KW_IMPORT IDENT_LIST ';' 
-      {
-        found("IMPORT", $2);
-      }
+      { found("IMPORT", $2); }
       ;
 
 /* IDENT_LIST */
@@ -106,7 +101,7 @@ DECLARATIONS:
    or a keyword VAR, followed by declaration of variables (VAR_DECLS),
    or a procedure declaration (PROC_DECL) with a semicolon */
 DECLARATION:
-         KW_CONST CONST_DECLS
+      KW_CONST CONST_DECLS
       | KW_VAR VAR_DECLS
       | PROC_DECL ';'
       ;
@@ -123,9 +118,7 @@ CONST_DECLS:
 /* Identifier, fololowed by equal sign and a constant factor (CONST_FACTOR) */
 CONST_DECL:
       IDENT ASSIGN CONST_FACTOR
-      {
-         found("CONST_DECL", $1);
-      }
+      { found("CONST_DECL", $1); }
       ;
 
 /* CONST_FACTOR */
@@ -150,9 +143,7 @@ VAR_DECLS:
    (TYPE_SPEC) */
 VAR_DECL:
       IDENT_LIST ':' TYPE_SPEC
-      {
-         found("VAR_DECL", $1);
-      }
+      { found("VAR_DECL", ""); }
       ;
 
 /* TYPE_SPEC */
@@ -201,9 +192,7 @@ FIELD:
 /* Procedure header, semicolon, block, and identifier */
 PROC_DECL:
       PROC_HEAD ';' BLOCK IDENT
-      {
-         found("PROC_DECL", $4);
-      }
+      { found("PROC_DECL", $4); }
       ;
 
 /* PROC_HEAD */
@@ -211,9 +200,7 @@ PROC_DECL:
    optional formal parameters (OPT_FORMAL_PARAMS) */
 PROC_HEAD:
       KW_PROCEDURE IDENT OPT_FORMAL_PARAMS
-      {
-         found("PROC_HEAD", $2);
-      }
+      { found("PROC_HEAD", $2); }
       ;
 
 /* OPT_FORMAL_PARAMS */
@@ -243,9 +230,7 @@ FP_SECTIONS:
    colon, and qualified indentifier (QUALIDENT) */
 FP_SECTION:
       OPT_VAR IDENT_LIST ':' QUALIDENT
-      {
-         found("FP_SECTION", $2);
-      }
+      { found("FP_SECTION", ""); }
       ;
 
 /* OPT_VAR */
@@ -302,9 +287,7 @@ STATEMENT:
 /* Identifier, qualifier, assignment operator (ASSIGN), and expression (EXPR) */
 ASSIGNMENT:
       IDENT ASSIGN QUALIF EXPR
-      {
-         found("ASSIGNMENT", $1);
-      }
+      { found("ASSIGNMENT", $1); }
       ;
 
 /* QUALIF */
@@ -331,13 +314,9 @@ SUBSCRIPTS:
  and right parenthesis */
 PROCEDURE_CALL:
       IDENT
-      {
-         found("PROCEDURE_CALL", $1);
-      }
+      { found("PROCEDURE_CALL", $1); }
       | IDENT '(' ACT_PARAMETERS ')'
-      {
-          found("PROCEDURE_CALL", $1);
-      }
+      { found("PROCEDURE_CALL", $1); }
       ;
 
 /* ACT_PARAMETERS */
@@ -416,6 +395,7 @@ FACTOR:
    statements (STATEMENTS), and keyword END */
 FOR_STATEMENT:
       KW_FOR IDENT ASSIGN EXPR TO_DOWNTO EXPR KW_DO STATEMENTS KW_END
+      { found("FOR_STATEMENT", $2); }
       ;
 
 /* TO_DOWNTO */
@@ -431,6 +411,7 @@ TO_DOWNTO:
    ELSE part (ELSE_PART), and keyword END */
 IF_STATEMENT:
       KW_IF EXPR KW_THEN STATEMENTS ELSIFS ELSE_PART KW_END
+      { found("IF_STATEMENT", ""); }
       ;
 
 /* ELSIFS */
@@ -453,6 +434,7 @@ ELSE_PART:
    statements (STATEMENTS), and keyword END (KW_END) */
 WHILE_STATEMENT:
       KW_WHILE EXPR KW_DO STATEMENTS KW_END
+      { found("WHILE_STATEMENT", ""); }
       ;
 
 /* REPEAT_STATEMENT */
@@ -460,12 +442,14 @@ WHILE_STATEMENT:
    keyword UNTIL (KW_UNTIL), and expression (EXPR) */
 REPEAT_STATEMENT:
       KW_REPEAT STATEMENTS KW_UNTIL EXPR
+      { found("REPEAT_STATEMENT", ""); }
       ;
 
 /* LOOP_STATEMENT */
 /* keyword LOOP (KW_LOOP), statements (STATEMENTS), and keyword end (KW_END) */
 LOOP_STATEMENT:
       KW_LOOP STATEMENTS KW_END
+      { found("LOOP_STATEMENT", ""); }
       ;
 
 /* CASE_STATEMENT */
@@ -473,6 +457,7 @@ LOOP_STATEMENT:
    cases (CASES), ELSE part (ELSE_PART), and keyword END */
 CASE_STATEMENT:
       KW_CASE EXPR KW_OF CASES ELSE_PART KW_END
+      { found("CASE_STATEMENT", ""); }
       ;
 
 /* CASES */
