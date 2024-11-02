@@ -414,47 +414,86 @@ FACTOR:
  /* Sequence: keyword FOR, identifier, assignment operator (ASSIGN),
     expression, TO or DOWNTO (TO_DOWNTO), expression, keyword DO,
    statements (STATEMENTS), and keyword END */
-
+FOR_STATEMENT:
+      KW_FOR IDENT ASSIGN EXPR TO_DOWNTO EXPR KW_DO STATEMENTS KW_END
+      ;
 
 /* TO_DOWNTO */
  /* Either keyword TO, or keyword DOWNTO */
+TO_DOWNTO:
+      KW_TO
+    | KW_DOWNTO
+    ;
 
 /* IF_STATEMENT */
 /* Sequence: keyword IF, expression,
    keyword THEN, statements (STATEMENTS),  ELSIF part (ELSIFS),
    ELSE part (ELSE_PART), and keyword END */
+IF_STATEMENT:
+      KW_IF EXPR KW_THEN STATEMENTS ELSIFS ELSE_PART KW_END
+      ;
 
 /* ELSIFS */
 /* Possibly empty sequence of sequences of the form:
    keyword ELSIF, expression, keyword THEN, and statements */
+ELSIFS:
+      /* empty */
+    | ELSIFS KW_ELSIF EXPR KW_THEN STATEMENTS
+    ;
 
 /* ELSE_PART */
 /* Either empty or keyword ELSE followed by statements */
+ELSE_PART:
+      /* empty */
+    | KW_ELSE STATEMENTS
+    ;
 
 /* WHILE_STATEMENT */
 /* keyword WHILE (KW_WHILE), expression (EXPR), keyword DO (KW_DO),
    statements (STATEMENTS), and keyword END (KW_END) */
+WHILE_STATEMENT:
+      KW_WHILE EXPR KW_DO STATEMENTS KW_END
+      ;
 
 /* REPEAT_STATEMENT */
 /* keyword REPEAT (KW_REPEAT), statements (STATEMENTS),
    keyword UNTIL (KW_UNTIL), and expression (EXPR) */
+REPEAT_STATEMENT:
+      KW_REPEAT STATEMENTS KW_UNTIL EXPR
+      ;
 
 /* LOOP_STATEMENT */
 /* keyword LOOP (KW_LOOP), statements (STATEMENTS), and keyword end (KW_END) */
+LOOP_STATEMENT:
+      KW_LOOP STATEMENTS KW_END
+      ;
 
 /* CASE_STATEMENT */
 /* keyword CASE (KW_CASE), expression (EXPR), keyword OF,
    cases (CASES), ELSE part (ELSE_PART), and keyword END */
+CASE_STATEMENT:
+      KW_CASE EXPR KW_OF CASES ELSE_PART KW_END
+      ;
 
 /* CASES */
 /* lists of 3 items: CASE labels (CASE_LABELS), colon,
    and statements (STATEMENTS), every 3 items separated with vertical bars */
+CASES:
+      CASE_LABELS '|' ':' '|' STATEMENTS
+      ;
 
 /* CASE_LABELS */
 /* list of CASE_LABEL separated with commas */
+CASE_LABELS:
+      CASE_LABELS ',' CASE_LABEL
+   ;
 
 /* CASE_LABEL */
 /* Either an integer constant, or a character constant */
+CASE_LABEL:
+      INTEGER_CONST
+    | CHAR_CONST
+    ;
 
 %%
 
