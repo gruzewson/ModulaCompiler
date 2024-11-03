@@ -53,6 +53,7 @@ OF return process_token(yytext, "KW_OF", "", KW_OF);
 ARRAY return process_token(yytext, "KW_ARRAY", "", KW_ARRAY);
 RECORD return process_token(yytext, "KW_RECORD", "", KW_RECORD);
 DOWNTO return process_token(yytext, "KW_DOWNTO", "", KW_DOWNTO);
+PROCEDURE return process_token(yytext, "KW_PROCEDURE", "", KW_PROCEDURE);
 
  /* C. usuwanie białych znaków */
 [[:space:]]+ ;
@@ -67,7 +68,7 @@ DOWNTO return process_token(yytext, "KW_DOWNTO", "", KW_DOWNTO);
 [[:alpha:]][[:alpha:][:digit:]]* return process_token(yytext, "IDENT", yytext, IDENT);
 
  /* F. wykrywanie liczb całkowitych bez znaku */
-[0-9]* return process_token(yytext, "INTEGER_CONST", yytext, INTEGER_CONST);
+[0-9]+ return process_token(yytext, "INTEGER_CONST", yytext, INTEGER_CONST);
 
  /* G. wykrywanie liczb rzeczywistych bez znaku */
  [0-9]+(\.[0-9]+)?(E[+-]?[0-9]+)? return process_token(yytext, "FLOAT_CONST", yytext, REAL_CONST);
