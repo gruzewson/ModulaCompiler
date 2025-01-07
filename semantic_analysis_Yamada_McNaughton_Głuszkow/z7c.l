@@ -14,7 +14,7 @@ EMPTYSET	"#"
 [a-z0-9] 	{ yylval = yytext[0]; add(yytext[0], 1); return SYMBOL; }
 {EPSILON}	{ yylval = yytext[0]; add(yytext[0], 0); return EPS; }
 {EMPTYSET}	{ yylval = yytext[0]; add(yytext[0], 0); return EMPTY; }
-[()|*] 		{ yylval = 999; add(yytext[0], 0); return yytext[0]; }
+[()|*+] 		{ yylval = 999; add(yytext[0], 0); return yytext[0]; }
 %%
 
 void
