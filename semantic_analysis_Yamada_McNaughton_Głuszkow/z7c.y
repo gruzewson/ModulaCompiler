@@ -229,6 +229,19 @@ RE: RE '*' {
   );
 };
 
+/* Kleene's plus */
+RE: RE '+' {
+  $$ = createRE(
+    RE_NULL($1), // Null
+    RE_FIRST($1), // First
+    RE_LAST($1), // Last
+    merge_follow_sets( // Follow
+      RE_FOLLOW($1),
+      set_product(RE_LAST($1), RE_FIRST($1))
+    )
+  );
+};
+
 /* parentheses */
 RE: '(' RE ')' {
   $$ = $2;
